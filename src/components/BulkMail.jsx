@@ -38,10 +38,10 @@ function BulkMail() {
     axios
       .post("https://bulkback.onrender.com/sendemail", { msg, emailList })
       .then((response) => {
-        alert( "Emails sent successfully!");
+        alert(response.data.message || "Emails sent successfully!");
       })
       .catch((err) => {
-        alert("Error: Failed to send emails.");
+        alert(`Error: ${err.response?.data?.message || "Failed to send emails."}`);
       })
       .finally(() => {
         setstatus(false);
