@@ -7,6 +7,7 @@ function BulkMail() {
   const [status, setStatus] = useState(false);
   const [emailList, setEmailList] = useState([]);
   const [resultDetails, setResultDetails] = useState([]);
+  const [alertMessage, setAlertMessage] = useState(""); // To show custom alert messages
 
   function handleMsg(evt) {
     setMsg(evt.target.value);
@@ -30,12 +31,21 @@ function BulkMail() {
 
   async function send() {
     setStatus(true);
+    setAlertMessage(""); // Reset previous alert
     try {
       const response = await axios.post("https://bulkback.onrender.com/sendemail", { msg, emailList });
-      alert("Emails processed. Check logs for details.");
-      setResultDetails(response.data.details || []);
+      const details = response.data.details || [];
+      setResultDetails(details);
+
+      // Check if all emails were successfully sent
+      const failedEmails = details.filter(item => item.status.startsWith("Failed"));
+      if (failedEmails.length === 0) {
+        setAlertMessage("All emails sent successfully!");
+      } else {
+        setAlertMessage(`Some emails failed. Check details for more info.`);
+      }
     } catch (err) {
-      alert("Failed to send emails. Check the console for errors.");
+      setAlertMessage("Error occurred while sending emails. Please try again.");
       console.error(err.message);
     }
     setStatus(false);
@@ -59,6 +69,7 @@ function BulkMail() {
         <button onClick={send} className="mt-2 bg-blue-950 py-2 px-2 text-white font-medium rounded-md w-fit">
           {status ? "Sending..." : "Send"}
         </button>
+        {alertMessage && <div className="mt-5 text-red-500 font-bold">{alertMessage}</div>}
         <div className="mt-5">
           <h2>Email Status Details:</h2>
           {resultDetails.map((result, index) => (
